@@ -9,8 +9,18 @@ import pandas as pd
 
 def load_data():
     train_df = pd.read_csv('train_labels.csv.gz', compression='gzip')
-    
+    id_yelp_map_df = pd.read_csv('restaurant_ids_to_yelp_ids.csv.gz',
+                                 compression='gzip')
+    submit_df = pd.read_csv('SubmissionFormat.csv.gz', compression='gzip')
+#    submit_df = pd.read_csv('PhaseIISubmissionFormat.csv.gz', 
+#                            compression='gzip')
+
     print train_df.columns
+    print id_yelp_map_df.columns
+    print submit_df.columns
+
+    for col in id_yelp_map_df.columns:
+        print col, len(id_yelp_map_df[col].unique())
     return
 
 if __name__ == '__main__':
