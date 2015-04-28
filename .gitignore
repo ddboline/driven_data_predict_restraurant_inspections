@@ -1,0 +1,11 @@
+*.pyc
+*.o
+*.png
+.directory
+*.so
+*.csv
+*.zip
+*.tsv
+*.gz
+*.7z
+*.pdf
