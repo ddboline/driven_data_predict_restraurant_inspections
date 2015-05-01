@@ -68,7 +68,7 @@ def clean_data(df, do_plots=False):
 
     for col in df.columns:
         if df[col].isnull().sum() > 0:
-            df.loc[df[col].isnull(), col] = np.mean(df[col])
+            df.loc[df[col].isnull(), col] = df.loc[df[col].notnull(), col]
     
     if do_plots:
         df = df.rename(columns={'*': 'minor', '**': 'major', '***': 'severe',
