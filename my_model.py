@@ -67,6 +67,7 @@ def test_model_parallel(xtrain, ytrain):
 
 def prepare_submission_parallel(xtest, ytest):
     YLABELS = ['*', '**', '***']
+    print(ytest.columns)
     for idx in range(3):
         with gzip.open('model_%d.pkl.gz', 'rb') as pklfile:
             model = pickle.load(pklfile)
