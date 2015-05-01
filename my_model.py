@@ -70,7 +70,8 @@ def prepare_submission_parallel(xtest, ytest):
     for idx in range(3):
         with gzip.open('model_%d.pkl.gz', 'rb') as pklfile:
             model = pickle.load(pklfile)
-        ytest[:, YLABELS[idx]] = model.predict(xtest)
+        key = YLABELS[idx]
+        ytest[:, key] = model.predict(xtest)
     print(ytest.shape)
     ytest.to_csv('submission.csv', index=False)
     return
