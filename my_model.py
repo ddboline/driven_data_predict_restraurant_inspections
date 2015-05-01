@@ -66,13 +66,13 @@ def test_model_parallel(xtrain, ytrain):
     return
 
 def prepare_submission_parallel(xtest, ytest):
-    YLABELS = ['*', '**', '***']
+    YLABELS = [u'*', u'**', u'***']
     print(ytest.columns)
     for idx in range(3):
         with gzip.open('model_%d.pkl.gz', 'rb') as pklfile:
             model = pickle.load(pklfile)
         key = YLABELS[idx]
-        ytest[:, key] = transform_from_log(model.predict(xtest))[:,]
+        ytest.loc[:, key] = transform_from_log(model.predict(xtest))
     print(ytest.shape)
     ytest.to_csv('submission.csv', index=False)
     return
