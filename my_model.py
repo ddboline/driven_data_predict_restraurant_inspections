@@ -31,6 +31,10 @@ def transform_to_log(y):
 def transform_from_log(ly):
     return np.round(np.expm1(ly)).astype(int)
 
+def scorer(estimator, X, y):
+    ypred = estimator.predict(X)
+    return mean_squared_error(ypred, y)
+
 def train_model_parallel(xtrain, ytrain, index=0):
     xTrain, xTest, yTrain, yTest = train_test_split(xtrain, ytrain[:, index],
                                                     test_size=0.25)
