@@ -15,8 +15,9 @@ import csv
 import gzip
 import json
 import datetime
-
 from dateutil.parser import parse
+
+from collections import defaultdict
 
 YEAR = datetime.date.today().year
 MONTH = datetime.date.today().month
@@ -54,7 +55,7 @@ ATTRIBUTES = {u'Wheelchair Accessible': 'wheelchair', u'Take-out': 'takeout',
               u'Parking': [u'garage', u'street', u'validated', u'lot',
                            u'valet'],
               u'Accepts Credit Cards': 'creditcard',
-              u'Good For Groups': 'groups', u'neighborhood': 'neighborhoods'}
+              u'Good For Groups': 'groups',}
 
 def reduce_json():
     train_df = pd.read_csv('train_labels.csv.gz', compression='gzip')
@@ -98,8 +99,8 @@ def reduce_json():
         outfile = gzip.open('business.csv.gz', 'wb')
         csv_writer = csv.writer(outfile)
         out_labels = ['restaurant_id', 'name', 'city',
-                      'latitude', 'open', 'review_count', 'stars',
-                      'longitude'] + CATEGORIES
+                      'latitude', 'longitude', 'open', 'review_count', 
+                      'avg_stars', 'neighborhoods',] + CATEGORIES
         for k, v in ATTRIBUTES.items():
             if type(v) is list:
                 for _v in v:
@@ -116,6 +117,7 @@ def reduce_json():
                 continue
             row_dict = {k: None for k in out_labels}
             row_dict['restaurant_id'] = rid
+            row_dict['avg_stars'] = out['stars']
             for key in out:
                 if key in out_labels:
                     val = out[key]
@@ -124,6 +126,19 @@ def reduce_json():
                             row_dict[key] = val[0]
                     elif type(val) == unicode:
                         row_dict[key] = val.encode(errors='replace')
+                    else:
+                        row_dict[key] = val
+            for val in CATEGORIES:
+                row_dict[val] = 0
+            for val in out['categories']:
+                if val in out_labels:
+                    row_dict[val] = 1
+            for k, v in ATTRIBUTES.items():
+                if type(v) == list:
+                    for _k in v:
+                        row_dict['%s_%s' % (k.lower(), _k)] = 0
+                else:
+                    row_dict[v] = 0
             for key in out['attributes'].keys():
                 for k, v in ATTRIBUTES.items():
                     if k == key:
@@ -132,7 +147,7 @@ def reduce_json():
                             for _k in val:
                                 row_dict['%s_%s' % (k.lower(), _k)] = val[_k]
                         elif type(v) == list and val in v:
-                            row_dict['%s_%s' % (k.lower(), v)] = 1
+                            row_dict['%s_%s' % (k.lower(), val)] = 1
                         else:
                             row_dict[v] = val
             row_val = [row_dict[col] for col in out_labels]
@@ -268,17 +283,15 @@ def reduce_json():
 
     return
 
-def feature_extraction(is_test=False):
+def feature_extraction():
     business_df = pd.read_csv('business.csv.gz', compression='gzip')
     checkin_df = pd.read_csv('checkins.csv.gz', compression='gzip')
     review_df = pd.read_csv('reviews.csv.gz', compression='gzip')
     tips_df = pd.read_csv('tips.csv.gz', compression='gzip')
     users_df = pd.read_csv('users.csv.gz', compression='gzip')
 
-    if is_test:
-        train_df = pd.read_csv('SubmissionFormat.csv.gz')
-    else:
-        train_df = pd.read_csv('train_labels.csv.gz', compression='gzip')
+    train_df = pd.read_csv('train_labels.csv.gz', compression='gzip')
+    test_df = pd.read_csv('SubmissionFormat.csv.gz', compression='gzip')
 
     out_labels = list(train_df.columns)
     for df in business_df, checkin_df:
@@ -287,54 +300,116 @@ def feature_extraction(is_test=False):
                 out_labels.append(col)
 
     out_labels += ['n_tips', u'n_review', u'votes_funny', u'votes_useful',
-                   u'votes_cool', u'stars', u'w_stars']
+                   u'votes_cool', u'stars', u'w_stars', u'most_recent', 
+                   u'least_recent']
 
-    if is_test:
-        outfile = gzip.open('test.csv.gz', 'wb')
-    else:
-        outfile = gzip.open('train.csv.gz', 'wb')
-    csv_writer = csv.writer(outfile)
-    csv_writer.writerow(out_labels)
+    for nstar in range(1,6):
+        key = 'star_%d' % nstar
+        out_labels.append(key)
 
-    for idx, row in train_df.iterrows():
+
+    business_dict = {}
+    for idx, row in business_df.iterrows():
         rid = row['restaurant_id']
-        row_dict = {k: None for k in out_labels}
-        for lab in out_labels:
-            if lab in row:
-                row_dict[lab] = row[lab]
+        row_dict = {}
+        for col in out_labels:
+            if col in row:
+                row_dict[col] = row[col]
+        if rid not in business_dict:
+            business_dict[rid] = row_dict
+        else:
+            for col in out_labels:
+                if col in row and col != 'review_count':
+                    business_dict[rid][col] = max(business_dict[rid][col], 
+                                                  row_dict[col])
+            business_dict[rid]['review_count'] += row_dict['review_count']
+    checkin_dict = {}
+    for idx, row in checkin_df.iterrows():
+        row_dict = {}
+        for col in out_labels:
+            if col in row:
+                row_dict[col] = row[col]
+        checkin_dict[row['restaurant_id']] = row_dict
+    user_dict = {}
+    for idx, row in users_df.iterrows():
+        if 'average_stars' in row:
+            user_dict[row['user_id']] = row['average_stars']
+    review_dict = defaultdict(list)
+    for idx, row in review_df.iterrows():
+        row_dict = {'user_id': row['user_id']}
+        for col in u'votes_funny', u'votes_useful', u'votes_cool', u'stars':
+            row_dict[col] = row[col]
+        for nstar in range(1,6):
+            key = 'star_%d' % nstar
+            if row['stars'] == nstar:
+                row_dict[key] = 1
+            else:
+                row_dict[key] = 0
+        row_dict['date'] = parse(row['date'])
+        review_dict[row['restaurant_id']].append(row_dict)
+    tips_dict = defaultdict(int)
+    for idx, row in tips_df.iterrows():
+        tips_dict[row['restaurant_id']] += 1
 
-        _tmp0 = business_df[business_df['restaurant_id'] == rid]
-        _tmp1 = checkin_df[checkin_df['restaurant_id'] == rid]
-        _tmp2 = review_df[review_df['restaurant_id'] == rid]
-        _tmp3 = tips_df[tips_df['restaurant_id'] == rid]
-
-        for df in _tmp0, _tmp1:
-            for idy, rowy in df.iterrows():
+    for df, ofname in (train_df, 'train.csv.gz'), (test_df, 'test.csv.gz'):
+        outfile = gzip.open(ofname, 'wb')
+        csv_writer = csv.writer(outfile)
+        csv_writer.writerow(out_labels)
+    
+        for idx, row in df.iterrows():
+            if idx % 1000 == 0:
+                print('processed %d' % idx)
+            rid = row['restaurant_id']
+            rdate = parse(row['date'])
+            row_dict = {k: None for k in out_labels}
+            for lab in out_labels:
+                if lab in row:
+                    row_dict[lab] = row[lab]
+    
+            _tmp0, _tmp1 = 2*[None]
+            if rid in business_dict:
+                _tmp0 = business_dict[rid]
+            if rid in checkin_dict:
+                _tmp1 = checkin_dict[rid]
+    
+            for dic in _tmp0, _tmp1:
+                if not dic:
+                    continue
                 for lab in out_labels:
-                    if lab in rowy:
-                        row_dict[lab] = rowy[lab]
-        row_dict['n_review'] = _tmp2.shape[0]
-        row_dict['n_tips'] = _tmp3.shape[0]
-        for col in (u'votes_funny', u'votes_useful', u'votes_cool', u'stars',
-                    u'w_stars'):
-            row_dict[col] = 0
+                    if lab in dic:
+                        row_dict[lab] = dic[lab]
+            row_dict['n_review'] = len(review_dict[rid])
+            row_dict['n_tips'] = tips_dict[rid]
+            row_dict['most_recent'] = 10000
+            row_dict['least_recent'] = 0
+            for nstar in range(1,6):
+                key = 'star_%d' % nstar
+                row_dict[key] = 0
 
-        for idy, rowy in _tmp2.iterrows():
-            uid = rowy['user_id']
-            star = rowy['stars']
-            avgstar = float(users_df[users_df['user_id'] == uid]\
-                                                ['average_stars'])
-#            datediff = (parse(row['date']) - parse(rowy['date'])).days
-            for col in (u'votes_funny', u'votes_useful', u'votes_cool',
-                        u'stars'):
-                row_dict[col] += rowy[col]
-            row_dict['w_stars'] += (avgstar/5.) * star
-
-        row_val = [row_dict[col] for col in out_labels]
-        csv_writer.writerow(row_val)
+            for col in (u'votes_funny', u'votes_useful', u'votes_cool', 
+                        u'stars', u'w_stars'):
+                row_dict[col] = 0
+            for rev in review_dict[rid]:
+                for col in (u'votes_funny', u'votes_useful', u'votes_cool', 
+                            u'stars'):
+                    row_dict[col] += rev[col]
+                for nstar in range(1,6):
+                    key = 'star_%d' % nstar
+                    row_dict[key] += rev[key]
+                datediff = abs((rdate - rev['date']).days)
+                if datediff < row_dict['most_recent']:
+                    row_dict['most_recent'] = datediff
+                if datediff > row_dict['least_recent']:
+                    row_dict['least_recent'] = datediff
+                uid = rev['user_id']
+                avgstar = user_dict[uid]
+                row_dict['w_stars'] += (avgstar/5) * rev['stars']
+    
+            row_val = [row_dict[col] for col in out_labels]
+            csv_writer.writerow(row_val)
 
     return
 
 if __name__ == '__main__':
-#    reduce_json()
+    reduce_json()
     feature_extraction()
