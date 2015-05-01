@@ -70,6 +70,7 @@ def prepare_submission_parallel(xtest, ytest):
     for idx in range(3):
         with gzip.open('model_%d.pkl.gz', 'rb') as pklfile:
             model = pickle.load(pklfile)
+        print(xtest.shape)
         ypred = model.predict(xtest)
 #        ypred = transform_from_log().astype(int)
         print(ypred.shape, ytest.shape)
