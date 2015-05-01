@@ -36,6 +36,15 @@ def train_model_parallel(xtrain, ytrain, index=0):
 #    model = RandomForestRegressor()
 #    model = LogisticRegression()
     model = GradientBoostingRegressor(verbose=1)
+
+    n_est = [10, 100, 200]
+    m_dep = [5, 10, 40]
+
+    model = GridSearchCV(estimator=model,
+                                param_grid=dict(n_estimators=n_est, max_depth=m_dep),
+                                scoring=scorer,
+                                n_jobs=-1, verbose=1)
+
     model.fit(xTrain, yTrain)
     ypred = model.predict(xTest)
     print('score %d %s' % (index, model.score(xTest, yTest)))
@@ -60,8 +69,9 @@ def prepare_submission_parallel(xtest, ytest):
     for idx in range(3):
         with gzip.open('model_%d.pkl.gz', 'rb') as pklfile:
             model = pickle.load(pklfile)
-        ytest[:, YLABELS[idx]] = transform_from_log(model.predict(xtest))\
-                                                                .astype(int)
+        ypred = transform_from_log(model.predict(xtest)).astype(int)
+        print(ypred.shape, ytest.shape)
+#        ytest[:, YLABELS[idx]] = 
     print(ytest.shape)
     ytest.to_csv('submission.csv', index=False)
     return
@@ -71,10 +81,10 @@ def my_model(index=0):
     
     ytrain = transform_to_log(ytrain)
     
-    for idx in range(3):
-        train_model_parallel(xtrain, ytrain, index=idx)
+#    for idx in range(3):
+#        train_model_parallel(xtrain, ytrain, index=idx)
 
-    test_model_parallel(xtrain, ytrain)
+#    test_model_parallel(xtrain, ytrain)
     prepare_submission_parallel(xtest, ytest)
 
     return
