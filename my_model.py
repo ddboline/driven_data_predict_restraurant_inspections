@@ -29,7 +29,7 @@ def transform_to_log(y):
     return np.log1p(y)
 
 def transform_from_log(ly):
-    return np.expm1(ly)
+    return np.round(np.expm1(ly)).astype(int)
 
 def train_model_parallel(xtrain, ytrain, index=0):
     xTrain, xTest, yTrain, yTest = train_test_split(xtrain, ytrain[:, index],
