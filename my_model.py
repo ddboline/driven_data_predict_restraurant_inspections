@@ -33,7 +33,7 @@ def transform_from_log(ly):
 
 def scorer(estimator, X, y):
     ypred = estimator.predict(X)
-    return mean_squared_error(ypred, y)
+    return 1.0/mean_squared_error(ypred, y)
 
 def train_model_parallel(xtrain, ytrain, index=0):
     xTrain, xTest, yTrain, yTest = train_test_split(xtrain, ytrain[:, index],
@@ -46,7 +46,8 @@ def train_model_parallel(xtrain, ytrain, index=0):
     m_dep = [5, 10, 40]
 
     model = GridSearchCV(estimator=model,
-                                param_grid=dict(n_estimators=n_est, max_depth=m_dep),
+                                param_grid=dict(n_estimators=n_est, 
+                                                max_depth=m_dep),
                                 scoring=scorer,
                                 n_jobs=-1, verbose=1)
 
