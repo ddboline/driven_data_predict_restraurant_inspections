@@ -19,6 +19,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.cross_validation import train_test_split
+from sklearn.grid_search import GridSearchCV
 
 from sklearn.metrics import mean_squared_error
 
@@ -69,7 +70,8 @@ def prepare_submission_parallel(xtest, ytest):
     for idx in range(3):
         with gzip.open('model_%d.pkl.gz', 'rb') as pklfile:
             model = pickle.load(pklfile)
-        ypred = transform_from_log(model.predict(xtest)).astype(int)
+        ypred = model.predict(xtest)
+#        ypred = transform_from_log().astype(int)
         print(ypred.shape, ytest.shape)
 #        ytest[:, YLABELS[idx]] = 
     print(ytest.shape)
