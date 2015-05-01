@@ -83,8 +83,8 @@ def load_data(do_plots=False):
     train_df = clean_data(train_df, do_plots)
     test_df = clean_data(test_df, do_plots)
     
-#    for col in train_df.columns:
-#        print(col, train_df[col].dtype)
+    for col in test_df.columns:
+        print(col, test_df[col].dtype)
     
     if do_plots:
         from plot_data import plot_data
