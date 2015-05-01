@@ -65,6 +65,10 @@ def clean_data(df, do_plots=False):
     df['year'] = df['date'].apply(lambda x: x.year)
     df['month'] = df['date'].apply(lambda x: x.month)
     df['weekday'] = df['date'].apply(lambda x: x.weekday())
+
+    for col in df.columns:
+        if df[col].isnull().sum() > 0:
+            df.loc[df[col].isnull(), col] = df[col].mean()
     
     if do_plots:
         df = df.rename(columns={'*': 'minor', '**': 'major', '***': 'severe',
