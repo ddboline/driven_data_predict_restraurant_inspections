@@ -32,6 +32,7 @@ CITIES = ['Boston', 'Hyde Park', 'West Roxbury', 'Dorchester', 'Roslindale',
 
 def clean_data(df, do_plots=False):
     df['city'] = df['city'].map({k: i for (i, k) in enumerate(CITIES)})
+    df.loc[df['city'].isnull(), 'city'] = -1
     df['neighborhoods'] = df['neighborhoods'].map({k: i for (i, k) in 
                                                    enumerate(NEIGHBORHOODS)})
     df.loc[df['neighborhoods'].isnull(), 'neighborhoods'] = -1
@@ -85,7 +86,8 @@ def load_data(do_plots=False):
     
     for col in train_df.columns:
         if train_df[col].dtype != test_df[col].dtype:
-            print(col, train_df[col].dtype, test_df[col].dtype)
+            print(col, train_df[col].dtype, test_df[col].dtype, 
+                  test_df[test_df[col].isnull()].shape)
     
     if do_plots:
         from plot_data import plot_data
