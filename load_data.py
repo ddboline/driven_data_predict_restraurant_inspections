@@ -67,7 +67,7 @@ def clean_data(df, do_plots=False):
     df['weekday'] = df['date'].apply(lambda x: x.weekday())
 
     for col in df.columns:
-        if df[col].isnull().sum() > 0:
+        if df[col].isnull().sum() > 0 and df[col].dtype != object:
             df.loc[df[col].isnull(), col] = np.mean(df[df[col].notnull()][col])
     
     if do_plots:
