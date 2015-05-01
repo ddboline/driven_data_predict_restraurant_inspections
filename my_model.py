@@ -50,7 +50,7 @@ def train_model_parallel(xtrain, ytrain, index=0):
     ypred = model.predict(xTest)
     print('score %d %s' % (index, model.score(xTest, yTest)))
     print('RMSLE %d %s' % (index, np.sqrt(mean_squared_error(yTest, ypred))))
-    with gzip.open('model_%d.pkl.gz', 'wb') as pklfile:
+    with gzip.open('model_%d.pkl.gz' % index, 'wb') as pklfile:
         pickle.dump(model, pklfile, protocol=2)
     return
 
@@ -59,7 +59,7 @@ def test_model_parallel(xtrain, ytrain):
                                                     test_size=0.25)
     ypred = np.zeros((yTest.shape[0], 3))
     for idx in range(3):
-        with gzip.open('model_%d.pkl.gz', 'rb') as pklfile:
+        with gzip.open('model_%d.pkl.gz' % idx, 'rb') as pklfile:
             model = pickle.load(pklfile)
         ypred[:, idx] = model.predict(xTest)
     print('RMSLE %s' % np.sqrt(mean_squared_error(yTest, ypred)))
@@ -69,7 +69,7 @@ def prepare_submission_parallel(xtest, ytest):
     YLABELS = [u'*', u'**', u'***']
     print(ytest.columns)
     for idx in range(3):
-        with gzip.open('model_%d.pkl.gz', 'rb') as pklfile:
+        with gzip.open('model_%d.pkl.gz' % idx, 'rb') as pklfile:
             model = pickle.load(pklfile)
         key = YLABELS[idx]
         ytest.loc[:, key] = transform_from_log(model.predict(xtest))
@@ -82,10 +82,10 @@ def my_model(index=0):
     
     ytrain = transform_to_log(ytrain)
     
-#    for idx in range(3):
-#        train_model_parallel(xtrain, ytrain, index=idx)
+    for idx in range(3):
+        train_model_parallel(xtrain, ytrain, index=idx)
 
-#    test_model_parallel(xtrain, ytrain)
+    test_model_parallel(xtrain, ytrain)
     prepare_submission_parallel(xtest, ytest)
 
     return
