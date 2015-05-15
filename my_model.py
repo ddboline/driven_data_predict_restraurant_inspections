@@ -53,6 +53,8 @@ def train_model_parallel(xtrain, ytrain, index=0):
 
     model.fit(xTrain, yTrain)
     ypred = model.predict(xTest)
+    if hasattr(model, 'best_params_'):
+        print('best_params', model.best_params_)
     print('score %d %s' % (index, model.score(xTest, yTest)))
     print('RMSLE %d %s' % (index, np.sqrt(mean_squared_error(yTest, ypred))))
     with gzip.open('model_%d.pkl.gz' % index, 'wb') as pklfile:
