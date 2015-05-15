@@ -115,4 +115,4 @@ def load_data(do_plots=False):
     return xtrain, ytrain, xtest, ytest
 
 if __name__ == '__main__':
-    xtrain, ytrain, xtest, ytest = load_data(do_plots=True)
+    xtrain, ytrain, xtest, ytest = load_data(do_plots=False)
