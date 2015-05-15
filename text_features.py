@@ -32,8 +32,9 @@ def text_to_wordlist(txt):
     return ' '.join(words)
 
 def text_features():
-    train_df = pd.read_csv('train.csv.gz', compression='gzip')
-    test_df = pd.read_csv('test.csv.gz', compression='gzip')
+    train_df = pd.read_csv('train.csv.gz', compression='gzip',
+                           low_memory=False)
+    test_df = pd.read_csv('test.csv.gz', compression='gzip', low_memory=False)
     id_yelp_map_df = pd.read_csv('restaurant_ids_to_yelp_ids.csv.gz',
                                  compression='gzip')
 
@@ -69,16 +70,18 @@ def text_features():
     vectorizer = CountVectorizer(analyzer='word', max_features=nfeatures)
     tip_vector = vectorizer.fit_transform(word_list).toarray()
     tip_dict = {}
-    for idx in range(bid_list):
+    for idx in range(len(bid_list)):
         tip_dict[bid_list[idx]] = idx
     train_tip_vector = np.zeros((train_df.shape[0], nfeatures), dtype=int)
     test_tip_vector = np.zeros((test_df.shape[0], nfeatures), dtype=int)
     for idx in range(train_df.shape[0]):
         rid = train_df.loc[idx, 'restaurant_id']
-        train_tip_vector[idx, :] = tip_vector[tip_dict[rid], :]
+        if rid in tip_dict:
+            train_tip_vector[idx, :] = tip_vector[tip_dict[rid], :]
     for idx in range(test_df.shape[0]):
         rid = test_df.loc[idx, 'restaurant_id']
-        test_tip_vector[idx, :] = tip_vector[tip_dict[rid], :]
+        if rid in tip_dict:
+            test_tip_vector[idx, :] = tip_vector[tip_dict[rid], :]
 
     for idx in range(100):
         train_df['tip_vec_%02d' % idx] = train_tip_vector[:, idx]
@@ -102,7 +105,7 @@ def text_features():
     vectorizer = CountVectorizer(analyzer='word', max_features=nfeatures)
     review_vector = vectorizer.fit_transform(word_list).toarray()
     review_dict = {}
-    for idx in range(bid_list):
+    for idx in range(len(bid_list)):
         review_dict[bid_list[idx]] = idx
     train_review_vector = np.zeros((train_df.shape[0], nfeatures), dtype=int)
     test_review_vector = np.zeros((test_df.shape[0], nfeatures), dtype=int)
