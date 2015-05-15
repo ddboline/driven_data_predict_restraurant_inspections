@@ -10,12 +10,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import pandas as pd
+import re
 import csv
 import gzip
 import json
 import datetime
 from dateutil.parser import parse
+
+import pandas as pd
 
 from collections import defaultdict
 
@@ -280,7 +282,6 @@ def reduce_json():
                     row_dict[lab] = out[lab]
             row_val = [row_dict[col] for col in out_labels]
             csv_writer.writerow(row_val)
-
     return
 
 def feature_extraction():
