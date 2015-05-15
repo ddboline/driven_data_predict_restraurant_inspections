@@ -101,7 +101,7 @@ def reduce_json():
         outfile = gzip.open('business.csv.gz', 'wb')
         csv_writer = csv.writer(outfile)
         out_labels = ['restaurant_id', 'name', 'city',
-                      'latitude', 'longitude', 'open', 'review_count', 
+                      'latitude', 'longitude', 'open', 'review_count',
                       'avg_stars', 'neighborhoods',] + CATEGORIES
         for k, v in ATTRIBUTES.items():
             if type(v) is list:
@@ -301,7 +301,7 @@ def feature_extraction():
                 out_labels.append(col)
 
     out_labels += ['n_tips', u'n_review', u'votes_funny', u'votes_useful',
-                   u'votes_cool', u'stars', u'w_stars', u'most_recent', 
+                   u'votes_cool', u'stars', u'w_stars', u'most_recent',
                    u'least_recent']
 
     for nstar in range(1,6):
@@ -321,7 +321,7 @@ def feature_extraction():
         else:
             for col in out_labels:
                 if col in row and col != 'review_count':
-                    business_dict[rid][col] = max(business_dict[rid][col], 
+                    business_dict[rid][col] = max(business_dict[rid][col],
                                                   row_dict[col])
             business_dict[rid]['review_count'] += row_dict['review_count']
     checkin_dict = {}
@@ -356,7 +356,7 @@ def feature_extraction():
         outfile = gzip.open(ofname, 'wb')
         csv_writer = csv.writer(outfile)
         csv_writer.writerow(out_labels)
-    
+
         for idx, row in df.iterrows():
             if idx % 1000 == 0:
                 print('processed %d' % idx)
@@ -366,13 +366,13 @@ def feature_extraction():
             for lab in out_labels:
                 if lab in row:
                     row_dict[lab] = row[lab]
-    
+
             _tmp0, _tmp1 = 2*[None]
             if rid in business_dict:
                 _tmp0 = business_dict[rid]
             if rid in checkin_dict:
                 _tmp1 = checkin_dict[rid]
-    
+
             for dic in _tmp0, _tmp1:
                 if not dic:
                     continue
@@ -387,11 +387,11 @@ def feature_extraction():
                 key = 'star_%d' % nstar
                 row_dict[key] = 0
 
-            for col in (u'votes_funny', u'votes_useful', u'votes_cool', 
+            for col in (u'votes_funny', u'votes_useful', u'votes_cool',
                         u'stars', u'w_stars'):
                 row_dict[col] = 0
             for rev in review_dict[rid]:
-                for col in (u'votes_funny', u'votes_useful', u'votes_cool', 
+                for col in (u'votes_funny', u'votes_useful', u'votes_cool',
                             u'stars'):
                     row_dict[col] += rev[col]
                 for nstar in range(1,6):
@@ -405,7 +405,7 @@ def feature_extraction():
                 uid = rev['user_id']
                 avgstar = user_dict[uid]
                 row_dict['w_stars'] += (avgstar/5) * rev['stars']
-    
+
             row_val = [row_dict[col] for col in out_labels]
             csv_writer.writerow(row_val)
 

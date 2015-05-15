@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# scp ddboline@ddbolineathome.mooo.com:/home/ddboline/setup_files/build/driven_data_predict_restraurant_inspections/predict_restraurant_inspections.tar.gz .
-# tar zxvf predict_restraurant_inspections.tar.gz
-# rm predict_restraurant_inspections.tar.gz
+scp ddboline@ddbolineathome.mooo.com:/home/ddboline/setup_files/build/driven_data_predict_restraurant_inspections/predict_restraurant_inspections.tar.gz .
+tar zxvf predict_restraurant_inspections.tar.gz
+rm predict_restraurant_inspections.tar.gz
 
 # ./split_csv.py > output.out 2> output.err ### do this beforehand...
 # ./load_data.py > output.out 2> output.err 

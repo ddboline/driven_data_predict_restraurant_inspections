@@ -46,7 +46,7 @@ def train_model_parallel(xtrain, ytrain, index=0):
     m_dep = [5, 10, 40]
 
     model = GridSearchCV(estimator=model,
-                                param_grid=dict(n_estimators=n_est, 
+                                param_grid=dict(n_estimators=n_est,
                                                 max_depth=m_dep),
                                 scoring=scorer,
                                 n_jobs=-1, verbose=1)
@@ -84,9 +84,9 @@ def prepare_submission_parallel(xtest, ytest):
 
 def my_model(index=0):
     xtrain, ytrain, xtest, ytest = load_data()
-    
+
     ytrain = transform_to_log(ytrain)
-    
+
     for idx in range(3):
         train_model_parallel(xtrain, ytrain, index=idx)
 

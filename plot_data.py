@@ -47,7 +47,7 @@ def plot_data(indf, prefix='html'):
     for idx in range(0, len(column_list), 3):
         print len(column_list), idx, (idx+3)
         column_groups.append(column_list[idx:(idx+3)])
-    
+
     for idx in range(len(column_groups)):
         for idy in range(0, idx):
             if idx == idy:
