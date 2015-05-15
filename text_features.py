@@ -67,7 +67,7 @@ def text_features():
 
     nfeatures = 100
     vectorizer = CountVectorizer(analyzer='word', max_features=nfeatures)
-    tip_vector = vectorizer.fit_transform(word_list).to_array()
+    tip_vector = vectorizer.fit_transform(word_list).toarray()
     tip_dict = {}
     for idx in range(bid_list):
         tip_dict[bid_list[idx]] = idx
@@ -100,7 +100,7 @@ def text_features():
 
     nfeatures = 100
     vectorizer = CountVectorizer(analyzer='word', max_features=nfeatures)
-    review_vector = vectorizer.fit_transform(word_list).to_array()
+    review_vector = vectorizer.fit_transform(word_list).toarray()
     review_dict = {}
     for idx in range(bid_list):
         review_dict[bid_list[idx]] = idx
