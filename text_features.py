@@ -86,11 +86,10 @@ def text_features():
         train_df['review_vec_%02d' % idx] = train_review_vector[:, idx]
         test_df['review_vec_%02d' % idx] = test_review_vector[:, idx]
 
-    train_df.to_csv('train_final.csv', index=False)
-    test_df.to_csv('test_final.csv', index=False)
-
-    os.system('gzip train_final.csv')
-    os.system('gzip test_final.csv')
+    with gzip.open('train_final.csv.gz', 'wb') as outfile:
+        train_df.to_csv(outfile, index=False)
+    with gzip.open('test_final.csv.gz', 'wb') as outfile:
+        test_df.to_csv(outfile, index=False)
 
     return
 

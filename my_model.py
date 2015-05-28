@@ -81,7 +81,8 @@ def prepare_submission_parallel(xtest, ytest):
         key = YLABELS[idx]
         ytest.loc[:, key] = transform_from_log(model.predict(xtest))
     print(ytest.shape)
-    ytest.to_csv('submission.csv', index=False)
+    with gzip.open('submission.csv.gz', 'wb') as subfile:
+        ytest.to_csv(subfile, index=False)
     return
 
 def my_model(index=0):

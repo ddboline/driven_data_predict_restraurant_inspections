@@ -10,7 +10,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import re
 import csv
 import gzip
 import json
@@ -87,8 +86,8 @@ def reduce_json():
                   'yelp_academic_dataset_checkin.json.gz',
                   'yelp_academic_dataset_tip.json.gz',):
         print('\n\n%s' % fname)
-        with gzip.open('yelp_boston_academic_dataset/%s' % fname, 'rb')\
-                as infile:
+        fn_ = 'yelp_boston_academic_dataset/%s' % fname
+        with gzip.open(fn_, 'rb') as infile:
             for line in infile:
                 out = json.loads(line)
                 for k, v in sorted(out.items()):
@@ -97,7 +96,8 @@ def reduce_json():
     print('\n\n')
 
     fname = 'yelp_academic_dataset_business.json.gz'
-    with gzip.open('yelp_boston_academic_dataset/%s' % fname, 'rb') as infile:
+    fn_ = 'yelp_boston_academic_dataset/%s' % fname
+    with gzip.open(fn_, 'rb') as infile:
         outfile = gzip.open('business.csv.gz', 'wb')
         csv_writer = csv.writer(outfile)
         out_labels = ['restaurant_id', 'name', 'city',
