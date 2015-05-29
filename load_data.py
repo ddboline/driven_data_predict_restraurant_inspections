@@ -61,7 +61,7 @@ def clean_data(df, do_plots=False):
         df[col] = df[col].astype(np.float64)
         df[col] = np.divide(df[col], df['n_review'])
 
-    df['date'] = df['date'].apply(lambda x: parse(x))
+    df['date'] = df['date'].apply(lambda x: parse(x).date())
     df['year'] = df['date'].apply(lambda x: x.year)
     df['month'] = df['date'].apply(lambda x: x.month)
     df['weekday'] = df['date'].apply(lambda x: x.weekday())
