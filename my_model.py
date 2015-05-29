@@ -38,9 +38,9 @@ def scorer(estimator, X, y):
     return 1.0/mean_squared_error(ypred, y)
 
 def train_model_parallel_xgb(xtrain, ytrain, index=0):
+    import xgboost as xgb
     xTrain, xTest, yTrain, yTest = train_test_split(xtrain, ytrain[:, index],
                                                     test_size=0.25)
-    import xgboost as xgb
     dtrain = xgb.DMatrix(xTrain, label=yTrain)
     dtest = xgb.DMatrix(xTest, label=yTest)
 
@@ -59,6 +59,37 @@ def train_model_parallel_xgb(xtrain, ytrain, index=0):
 
     with gzip.open('model_bst_%d.txt.gz', 'wb') as mfile:
         bst.dump_model(mfile)
+
+def test_model_parallel_xgb(xtrain, ytrain):
+    import xgboost as xgb
+    xTrain, xTest, yTrain, yTest = train_test_split(xtrain, ytrain,
+                                                    test_size=0.25)
+    ypred = np.zeros((yTest.shape[0], 3))
+    dtest = xgb.DMatrix(xTest)
+    for idx in range(3):
+        model = xgb.Booster({'nthread':NCPU})
+        with gzip.open('model_bst_%d.txt.gz', 'rb') as mfile:
+            model.load_model(mfile)
+        ypred[:, idx] = model.predict(dtest)
+    print('RMSLE %s' % np.sqrt(mean_squared_error(yTest, ypred)))
+    return
+
+def prepare_submission_parallel_xgb(xtest, ytest):
+    import xgboost as xgb
+    YLABELS = [u'*', u'**', u'***']
+    print(ytest.columns)
+    dtest = xgb.DMatrix(xtest)
+    for idx in range(3):
+        model = xgb.Booster({'nthread':NCPU})
+        with gzip.open('model_bst_%d.txt.gz', 'rb') as mfile:
+            model.load_model(mfile)
+        key = YLABELS[idx]
+        ytest.loc[:, key] = transform_from_log(model.predict(dtest))
+    print(ytest.shape)
+    with gzip.open('submission.csv.gz', 'wb') as subfile:
+        ytest.to_csv(subfile, index=False)
+    return
+
 
 def train_model_parallel(xtrain, ytrain, index=0):
     xTrain, xTest, yTrain, yTest = train_test_split(xtrain, ytrain[:, index],
@@ -116,10 +147,10 @@ def my_model(index=0):
     ytrain = transform_to_log(ytrain)
 
     for idx in range(3):
-        train_model_parallel(xtrain, ytrain, index=idx)
+        train_model_parallel_xgb(xtrain, ytrain, index=idx)
 
-    test_model_parallel(xtrain, ytrain)
-    prepare_submission_parallel(xtest, ytest)
+    test_model_parallel_xgb(xtrain, ytrain)
+    prepare_submission_parallel_xgb(xtest, ytest)
 
     return
 
