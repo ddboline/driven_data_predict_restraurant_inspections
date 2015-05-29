@@ -98,8 +98,8 @@ def train_model_parallel(xtrain, ytrain, index=0):
 #    model = LogisticRegression()
     model = GradientBoostingRegressor(verbose=1)
 
-    n_est = [10, 50, 100]
-    m_dep = [5, 4, 3]
+    n_est = [10, 50]
+    m_dep = [5, 3]
 
     model = GridSearchCV(estimator=model,
                                 param_grid=dict(n_estimators=n_est,
