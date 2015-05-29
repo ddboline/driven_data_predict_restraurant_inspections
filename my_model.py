@@ -69,7 +69,7 @@ def test_model_parallel_xgb(xtrain, ytrain):
     for idx in range(3):
         model = xgb.Booster({'nthread':NCPU})
         with gzip.open('model_bst_%d.txt.gz' % idx, 'rb') as mfile:
-            model.load_model(mfile)
+            model.load_model(mfile.read())
         ypred[:, idx] = model.predict(dtest)
     print('RMSLE %s' % np.sqrt(mean_squared_error(yTest, ypred)))
     return
