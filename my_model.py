@@ -68,10 +68,10 @@ def test_model_parallel_xgb(xtrain, ytrain):
     ypred = np.zeros((yTest.shape[0], 3))
     dtest = xgb.DMatrix(xTest)
     for idx in range(3):
-        model = xgb.Booster({'nthread':NCPU})
+        bst = xgb.Booster({'nthread':NCPU})
         with gzip.open('model_bst_%d.txt.gz' % idx, 'rb') as mfile:
-            model.load_model(mfile.read())
-        ypred[:, idx] = model.predict(dtest)
+            bst.load_model(mfile.read())
+        ypred[:, idx] = bst.predict(dtest, ntree_limit=bst.best_iteration)
     print('\nRMSLE %s\n' % np.sqrt(mean_squared_error(yTest, ypred)))
     return
 
@@ -82,11 +82,12 @@ def prepare_submission_parallel_xgb(xtest, ytest):
     print(ytest.columns)
     dtest = xgb.DMatrix(xtest)
     for idx in range(3):
-        model = xgb.Booster({'nthread':NCPU})
+        bst = xgb.Booster({'nthread':NCPU})
         with gzip.open('model_bst_%d.txt.gz' % idx, 'rb') as mfile:
-            model.load_model(mfile.read())
+            bst.load_model(mfile.read())
         key = YLABELS[idx]
-        ytest.loc[:, key] = transform_from_log(model.predict(dtest))
+        ytest.loc[:, key] = transform_from_log(bst.predict(dtest,
+                                               ntree_limit=bst.best_iteration))
     print(ytest.shape)
     with gzip.open('submission.csv.gz', 'wb') as subfile:
         ytest.to_csv(subfile, index=False)
