@@ -57,7 +57,7 @@ def train_model_parallel_xgb(xtrain, ytrain, index=0):
     bst = xgb.train(plst, dtrain, num_round, evallist,
                     early_stopping_rounds=10)
 
-    with gzip.open('model_bst_%d.txt.gz', 'wb') as mfile:
+    with gzip.open('model_bst_%d.txt.gz' % index, 'wb') as mfile:
         bst.dump_model(mfile)
 
 def test_model_parallel_xgb(xtrain, ytrain):
@@ -68,7 +68,7 @@ def test_model_parallel_xgb(xtrain, ytrain):
     dtest = xgb.DMatrix(xTest)
     for idx in range(3):
         model = xgb.Booster({'nthread':NCPU})
-        with gzip.open('model_bst_%d.txt.gz', 'rb') as mfile:
+        with gzip.open('model_bst_%d.txt.gz' % idx, 'rb') as mfile:
             model.load_model(mfile)
         ypred[:, idx] = model.predict(dtest)
     print('RMSLE %s' % np.sqrt(mean_squared_error(yTest, ypred)))
@@ -81,7 +81,7 @@ def prepare_submission_parallel_xgb(xtest, ytest):
     dtest = xgb.DMatrix(xtest)
     for idx in range(3):
         model = xgb.Booster({'nthread':NCPU})
-        with gzip.open('model_bst_%d.txt.gz', 'rb') as mfile:
+        with gzip.open('model_bst_%d.txt.gz' % idx, 'rb') as mfile:
             model.load_model(mfile)
         key = YLABELS[idx]
         ytest.loc[:, key] = transform_from_log(model.predict(dtest))
