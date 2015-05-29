@@ -57,7 +57,7 @@ def train_model_parallel_xgb(xtrain, ytrain, index=0):
     bst = xgb.train(plst, dtrain, num_round, evallist,
                     early_stopping_rounds=10)
 
-    bst.dump_model('model_bst_%d.txt' % index)
+    bst.save_model('model_bst_%d.txt' % index)
 
 def test_model_parallel_xgb(xtrain, ytrain):
     import xgboost as xgb
