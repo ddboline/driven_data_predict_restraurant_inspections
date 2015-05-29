@@ -146,10 +146,10 @@ def my_model(index=0):
 
     ytrain = transform_to_log(ytrain)
 
-    for idx in range(3):
-        train_model_parallel(xtrain, ytrain, index=idx)
-
-    test_model_parallel(xtrain, ytrain)
+#    for idx in range(3):
+#        train_model_parallel(xtrain, ytrain, index=idx)
+#
+#    test_model_parallel(xtrain, ytrain)
     prepare_submission_parallel(xtest, ytest)
 
     return
