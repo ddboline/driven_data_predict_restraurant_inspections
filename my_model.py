@@ -20,10 +20,12 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.cross_validation import train_test_split
 from sklearn.grid_search import GridSearchCV
-
 from sklearn.metrics import mean_squared_error
 
 from load_data import load_data
+
+NCPU = len([x for x in open('/proc/cpuinfo').read().split('\n')
+            if x.find('processor') == 0])
 
 def transform_to_log(y):
     return np.log1p(y)
@@ -34,6 +36,29 @@ def transform_from_log(ly):
 def scorer(estimator, X, y):
     ypred = estimator.predict(X)
     return 1.0/mean_squared_error(ypred, y)
+
+def train_model_parallel_xgb(xtrain, ytrain, index=0):
+    xTrain, xTest, yTrain, yTest = train_test_split(xtrain, ytrain[:, index],
+                                                    test_size=0.25)
+    import xgboost as xgb
+    dtrain = xgb.DMatrix(xTrain, label=yTrain)
+    dtest = xgb.DMatrix(xTest, label=yTest)
+
+    param = {'bst:max_depth':2, 
+             'bst:eta':1, 
+             'silent':1, 
+             'objective':'reg:linear' }
+    param['nthread'] = NCPU
+    plst = param.items()
+    plst += [('eval_metric', 'rmse')] # Multiple evals can be handled in this way
+    
+    evallist  = [(dtest,'eval'), (dtrain,'train')]
+    num_round = 10
+    bst = xgb.train(plst, dtrain, num_round, evallist,
+                    early_stopping_rounds=10)
+
+    with gzip.open('model_bst_%d.txt.gz', 'wb') as mfile:
+        bst.dump_model(mfile)
 
 def train_model_parallel(xtrain, ytrain, index=0):
     xTrain, xTest, yTrain, yTest = train_test_split(xtrain, ytrain[:, index],
