@@ -44,7 +44,7 @@ def train_model_parallel_xgb(xtrain, ytrain, index=0):
     dtrain = xgb.DMatrix(xTrain, label=yTrain)
     dtest = xgb.DMatrix(xTest, label=yTest)
 
-    param = {'bst:max_depth':2, 
+    param = {'bst:max_depth':3,
              'bst:eta':1, 
              'silent':1, 
              'objective':'reg:linear' }
