@@ -56,8 +56,8 @@ def train_model_parallel_xgb(xtrain, ytrain, index=0):
     num_round = 10
     model = xgb.train(plst, dtrain, num_round, evallist,
                     early_stopping_rounds=10)
-
-    model.save_model('model_bst_%d.txt' % index)
+    with gzip.open('model_bst_%d.pkl.gz' % index, 'wb') as pklfile:
+        pickle.dump(model, pklfile, protocol=2)
 
 def test_model_parallel_xgb(xtrain, ytrain):
     import xgboost as xgb
@@ -67,9 +67,8 @@ def test_model_parallel_xgb(xtrain, ytrain):
     ypred = np.zeros((yTest.shape[0], 3))
     dtest = xgb.DMatrix(xTest)
     for idx in range(3):
-        model = xgb.Booster({'nthread':NCPU})
-        with open('model_bst_%d.txt' % idx, 'rb') as mfile:
-            model.load_model(mfile)
+        with gzip.open('model_bst_%d.pkl.gz' % idx, 'rb') as pklfile:
+            model = pickle.load(pklfile)
         ypred[:, idx] = model.predict(dtest, ntree_limit=model.best_iteration)
     print('\nRMSLE %s\n' % np.sqrt(mean_squared_error(yTest, ypred)))
     return
@@ -82,7 +81,8 @@ def prepare_submission_parallel_xgb(xtest, ytest):
     dtest = xgb.DMatrix(xtest)
     for idx in range(3):
         model = xgb.Booster({'nthread':NCPU})
-        model.load_model('model_bst_%d.txt' % idx)
+        with gzip.open('model_bst_%d.pkl.gz' % idx, 'rb') as pklfile:
+            model = pickle.load(pklfile)
         key = YLABELS[idx]
         ytest.loc[:, key] = transform_from_log(model.predict(dtest,
                                                ntree_limit=model.best_iteration))
