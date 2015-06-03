@@ -53,7 +53,7 @@ def train_model_parallel_xgb(xtrain, ytrain, index=0, depth=2):
     plst += [('eval_metric', 'rmse')] # Multiple evals can be handled in this way
     
     evallist  = [(dtest,'eval'), (dtrain,'train')]
-    num_round = 10
+    num_round = 100
     model = xgb.train(plst, dtrain, num_round, evallist,
                     early_stopping_rounds=10)
     with gzip.open('model_bst_%d.pkl.gz' % index, 'wb') as pklfile:
