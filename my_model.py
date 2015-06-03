@@ -54,10 +54,10 @@ def train_model_parallel_xgb(xtrain, ytrain, index=0):
     
     evallist  = [(dtest,'eval'), (dtrain,'train')]
     num_round = 10
-    bst = xgb.train(plst, dtrain, num_round, evallist,
+    model = xgb.train(plst, dtrain, num_round, evallist,
                     early_stopping_rounds=10)
 
-    bst.save_model('model_bst_%d.txt' % index)
+    model.save_model('model_bst_%d.txt' % index)
 
 def test_model_parallel_xgb(xtrain, ytrain):
     import xgboost as xgb
@@ -67,9 +67,9 @@ def test_model_parallel_xgb(xtrain, ytrain):
     ypred = np.zeros((yTest.shape[0], 3))
     dtest = xgb.DMatrix(xTest)
     for idx in range(3):
-        bst = xgb.Booster({'nthread':NCPU})
-        bst.load_model('model_bst_%d.txt' % idx)
-        ypred[:, idx] = bst.predict(dtest, ntree_limit=bst.best_iteration)
+        model = xgb.Booster({'nthread':NCPU})
+        model.load_model('model_bst_%d.txt' % idx)
+        ypred[:, idx] = model.predict(dtest, ntree_limit=model.best_iteration)
     print('\nRMSLE %s\n' % np.sqrt(mean_squared_error(yTest, ypred)))
     return
 
@@ -80,11 +80,11 @@ def prepare_submission_parallel_xgb(xtest, ytest):
     print(ytest.columns)
     dtest = xgb.DMatrix(xtest)
     for idx in range(3):
-        bst = xgb.Booster({'nthread':NCPU})
-        bst.load_model('model_bst_%d.txt' % idx)
+        model = xgb.Booster({'nthread':NCPU})
+        model.load_model('model_bst_%d.txt' % idx)
         key = YLABELS[idx]
-        ytest.loc[:, key] = transform_from_log(bst.predict(dtest,
-                                               ntree_limit=bst.best_iteration))
+        ytest.loc[:, key] = transform_from_log(model.predict(dtest,
+                                               ntree_limit=model.best_iteration))
     print(ytest.shape)
     with gzip.open('submission.csv.gz', 'wb') as subfile:
         ytest.to_csv(subfile, index=False)
@@ -146,11 +146,11 @@ def my_model(index=0):
 
     ytrain = transform_to_log(ytrain)
 
-#    for idx in range(3):
-#        train_model_parallel(xtrain, ytrain, index=idx)
-#
-#    test_model_parallel(xtrain, ytrain)
-    prepare_submission_parallel(xtest, ytest)
+    for idx in range(3):
+        train_model_parallel_xgb(xtrain, ytrain, index=idx)
+
+    test_model_parallel_xgb(xtrain, ytrain)
+    prepare_submission_parallel_xgb(xtest, ytest)
 
     return
 
