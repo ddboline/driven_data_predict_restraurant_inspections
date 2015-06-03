@@ -46,9 +46,9 @@ def train_model_parallel_xgb(xtrain, ytrain, index=0, depth=2):
     dtest = xgb.DMatrix(xTest, label=yTest)
 
     param = {'bst:max_depth':depth,
-             'bst:eta':1, 
+             'bst:eta':0.3, 
              'silent':1, 
-             'objective':'reg:linear' }
+             'objective':'count:poisson' }
     param['nthread'] = NCPU
     plst = param.items()
     plst += [('eval_metric', 'rmse')] # Multiple evals can be handled in this way
