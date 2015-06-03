@@ -68,7 +68,8 @@ def test_model_parallel_xgb(xtrain, ytrain):
     dtest = xgb.DMatrix(xTest)
     for idx in range(3):
         model = xgb.Booster({'nthread':NCPU})
-        model.load_model('model_bst_%d.txt' % idx)
+        with open('model_bst_%d.txt' % index, 'rb') as mfile:
+            model.load_model(mfile)
         ypred[:, idx] = model.predict(dtest, ntree_limit=model.best_iteration)
     print('\nRMSLE %s\n' % np.sqrt(mean_squared_error(yTest, ypred)))
     return
