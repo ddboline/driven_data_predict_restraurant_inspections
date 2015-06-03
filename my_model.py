@@ -37,14 +37,14 @@ def scorer(estimator, X, y):
     ypred = estimator.predict(X)
     return 1.0/mean_squared_error(ypred, y)
 
-def train_model_parallel_xgb(xtrain, ytrain, index=0):
+def train_model_parallel_xgb(xtrain, ytrain, index=0, depth=2):
     import xgboost as xgb
     xTrain, xTest, yTrain, yTest = train_test_split(xtrain, ytrain[:, index],
                                                     test_size=0.25)
     dtrain = xgb.DMatrix(xTrain, label=yTrain)
     dtest = xgb.DMatrix(xTest, label=yTest)
 
-    param = {'bst:max_depth':5,
+    param = {'bst:max_depth':depth,
              'bst:eta':1, 
              'silent':1, 
              'objective':'reg:linear' }
@@ -126,8 +126,9 @@ def test_model_parallel(xtrain, ytrain):
         with gzip.open('model_%d.pkl.gz' % idx, 'rb') as pklfile:
             model = pickle.load(pklfile)
         ypred[:, idx] = model.predict(xTest)
-    print('RMSLE %s' % np.sqrt(mean_squared_error(yTest, ypred)))
-    return
+    rmsle = np.sqrt(mean_squared_error(yTest, ypred))
+    print('RMSLE %s' % rmsle)
+    return rmsle
 
 def prepare_submission_parallel(xtest, ytest):
     YLABELS = [u'*', u'**', u'***']
@@ -147,11 +148,18 @@ def my_model(index=0):
 
     ytrain = transform_to_log(ytrain)
 
-    for idx in range(3):
-        train_model_parallel_xgb(xtrain, ytrain, index=idx)
+    results = {}
+    for depth in range(6,10):
+        for idx in range(3):
+            train_model_parallel_xgb(xtrain, ytrain, index=idx, depth=depth)
 
-    test_model_parallel_xgb(xtrain, ytrain)
-    prepare_submission_parallel_xgb(xtest, ytest)
+        rmsle = test_model_parallel_xgb(xtrain, ytrain)
+        prepare_submission_parallel_xgb(xtest, ytest)
+        os.rename('submission.csv.gz', 'submission_dep_%d_20150603.csv.gz' % depth)
+        results[depth] = rmsle
+    
+    for depth in sorted(results):
+        print(depth, results[depth])
 
     return
 
