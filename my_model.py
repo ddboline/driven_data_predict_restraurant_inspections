@@ -151,7 +151,7 @@ def my_model(index=0):
     ytrain = transform_to_log(ytrain)
 
     results = {}
-    for depth in range(2,20):
+    for depth in range(10,20):
         for idx in range(3):
             train_model_parallel_xgb(xtrain, ytrain, index=idx, depth=depth)
 
