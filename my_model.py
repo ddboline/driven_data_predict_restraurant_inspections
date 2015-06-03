@@ -10,6 +10,7 @@ Created on Fri May  1 10:09:24 2015
 #from __future__ import print_function
 #from __future__ import unicode_literals
 
+import os
 import gzip
 import cPickle as pickle
 
