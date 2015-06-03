@@ -71,8 +71,9 @@ def test_model_parallel_xgb(xtrain, ytrain):
         with gzip.open('model_bst_%d.pkl.gz' % idx, 'rb') as pklfile:
             model = pickle.load(pklfile)
         ypred[:, idx] = model.predict(dtest, ntree_limit=model.best_iteration)
-    print('\nRMSLE %s\n' % np.sqrt(mean_squared_error(yTest, ypred)))
-    return
+    rmsle = np.sqrt(mean_squared_error(yTest, ypred))
+    print('\nRMSLE %s\n' % rmsle)
+    return rmsle
 
 def prepare_submission_parallel_xgb(xtest, ytest):
     import xgboost as xgb
