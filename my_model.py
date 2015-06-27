@@ -51,7 +51,7 @@ def train_model_parallel_xgb(xtrain, ytrain, index=0, depth=2):
              'objective':'count:poisson' }
     param['nthread'] = NCPU
     plst = param.items()
-    plst += [('eval_metric', 'rmse')] # Multiple evals can be handled in this way
+    plst += [('eval_metric', 'rmse')]
     
     evallist  = [(dtest,'eval'), (dtrain,'train')]
     num_round = 100
@@ -157,7 +157,8 @@ def my_model(index=0):
 
         rmsle = test_model_parallel_xgb(xtrain, ytrain)
         prepare_submission_parallel_xgb(xtest, ytest)
-        os.rename('submission.csv.gz', 'submission_dep_%d_20150603.csv.gz' % depth)
+        os.rename('submission.csv.gz',
+                  'submission_dep_%d_20150603.csv.gz' % depth)
         results[depth] = rmsle
     
     for depth in sorted(results):

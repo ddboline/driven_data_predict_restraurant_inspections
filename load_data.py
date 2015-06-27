@@ -13,6 +13,7 @@ from __future__ import unicode_literals
 import numpy as np
 import pandas as pd
 
+import datetime
 from dateutil.parser import parse
 
 NEIGHBORHOODS = [u'Allston/Brighton', u'Back Bay', u'Beacon Hill',
@@ -62,6 +63,9 @@ def clean_data(df, do_plots=False):
         df[col] = np.divide(df[col], df['n_review'])
 
     df['date'] = df['date'].apply(lambda x: parse(x).date())
+    def days_since_2000(date_):
+        return (date_ - datetime.date(year=2000, month=1, day=1)).days
+    df['days'] = df['date'].apply(days_since_2000)
     df['year'] = df['date'].apply(lambda x: x.year)
     df['month'] = df['date'].apply(lambda x: x.month)
     df['weekday'] = df['date'].apply(lambda x: x.weekday())

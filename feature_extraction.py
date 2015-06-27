@@ -104,7 +104,7 @@ def reduce_json():
                       'latitude', 'longitude', 'open', 'review_count',
                       'avg_stars', 'neighborhoods',] + CATEGORIES
         for k, v in ATTRIBUTES.items():
-            if type(v) is list:
+            if type(v) == list:
                 for _v in v:
                     out_labels.append(u'%s_%s' % (k.lower(), _v))
             else:
@@ -291,8 +291,8 @@ def feature_extraction():
     tips_df = pd.read_csv('tips.csv.gz', compression='gzip')
     users_df = pd.read_csv('users.csv.gz', compression='gzip')
 
-    train_df = pd.read_csv('train_labels.csv.gz', compression='gzip')
-    test_df = pd.read_csv('SubmissionFormat.csv.gz', compression='gzip')
+    train_df = pd.read_csv('AllViolations.csv.gz', compression='gzip')
+    test_df = pd.read_csv('PhaseIISubmissionFormat.csv.gz', compression='gzip')
 
     out_labels = list(train_df.columns)
     for df in business_df, checkin_df:
@@ -412,5 +412,5 @@ def feature_extraction():
     return
 
 if __name__ == '__main__':
-    reduce_json()
+#    reduce_json()
     feature_extraction()

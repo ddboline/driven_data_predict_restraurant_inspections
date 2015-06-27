@@ -12,7 +12,6 @@ from __future__ import unicode_literals
 
 from nltk.corpus import stopwords
 
-import os
 import re
 import gzip
 import json

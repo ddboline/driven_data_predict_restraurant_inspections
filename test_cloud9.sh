@@ -4,10 +4,10 @@ scp ddboline@ddbolineathome.mooo.com:/home/ddboline/setup_files/build/driven_dat
 tar zxvf predict_restraurant_inspections.tar.gz
 rm predict_restraurant_inspections.tar.gz
 
-# ./text_features.py > output.out 2> output.err ### do this beforehand...
+./text_features.py > output.out 2> output.err ### do this beforehand...
 # ./split_csv.py > output.out 2> output.err ### do this beforehand...
 # ./load_data.py > output.out 2> output.err 
-./my_model.py > output.out 2> output.err
+# ./my_model.py > output.out 2> output.err
 
 # D=`date +%Y%m%d%H%M%S`
 # tar zcvf output_${D}.tar.gz model.pkl.gz output.out output.err
